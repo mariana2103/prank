@@ -35,7 +35,7 @@ LINK_VOVO  = "https://www.youtube.com/watch?v=bDCBj15vKTE"
 LINK_RELAX = "https://www.youtube.com/watch?v=92xTPH7OtLs"
 LINK_FOCO  = "https://www.youtube.com/watch?v=Xdn0-lnDecw"
 
-LIMITE_SEGUNDOS = 10   # segundos no YouTube antes de disparar
+LIMITE_SEGUNDOS = 10 * 60   # segundos no YouTube antes de disparar
 VIDEO_DURACAO   = 15   # segundos que ele tem de ver cada vídeo
 
 # ─── nome falso para o ícone (aparece no hover e no gestor de tarefas) ────────
@@ -64,8 +64,8 @@ def fechar_tabs_youtube():
 
 def abrir_video(link):
     try:
-        webbrowser.open(link)
-        time.sleep(4)
+        subprocess.Popen(f'start msedge "{link}"', shell=True)
+        time.sleep(2)
     except Exception as e:
         print(f"Erro ao abrir vídeo: {e}")
 
@@ -112,9 +112,10 @@ def vigiar_video(link, parar_event, msg_fecho, msg_fim=None):
             abrir_video(link)
         time.sleep(3)
 
-def reproduzir_video_com_vigilancia(link, msg_fecho, msg_fim=None):
-    print("A abrir vídeo...")
-    abrir_video(link)
+def reproduzir_video_com_vigilancia(link, msg_fecho, msg_fim=None, ja_aberto=False):
+    if not ja_aberto:
+        print("A abrir vídeo...")
+        abrir_video(link)
     parar = threading.Event()
     t = threading.Thread(target=vigiar_video, args=(link, parar, msg_fecho, msg_fim), daemon=True)
     t.start()
@@ -130,31 +131,37 @@ def ciclo_prank():
     fechar_tabs_youtube()
     popup("A TRABALHAR MUITO NÃO É ?",                                                                   "PRODUTIVIDADE ZERO")
     popup("PRODUTIVIDADE ZERO",                                                                          "PRODUTIVIDADE ZERO")
+    threading.Thread(target=abrir_video, args=(LINK_VOVO,), daemon=True).start()
     popup("E depois ainda diz que trabalha? Sim confia",                                                 "PRODUTIVIDADE ZERO")
     reproduzir_video_com_vigilancia(
         LINK_VOVO,
         msg_fecho="Não estás a gostar do banger? Infelizmente vais ter de ouvir até ao fim. Upsi!",
+        ja_aberto=True,
     )
     print("Video 1 terminado.")
 
     fechar_tabs_youtube()
     popup("A tua namorada é um anjo na terra, linda e perfeita.",                                        "MENSAGEM DO ANJO")
     popup("Respira um pouco, relaxa, não me mates",                                                     "MENSAGEM DO ANJO")
+    threading.Thread(target=abrir_video, args=(LINK_RELAX,), daemon=True).start()
     popup("Sabes que te amo muito certo? Reflete nisso enquanto respiras antes de vires falar comigo!", "MENSAGEM DO ANJO")
     reproduzir_video_com_vigilancia(
         LINK_RELAX,
         msg_fecho="Eu acho mesmo que tu queres relaxar! Essa tensão é provavelmente irritação não te fazem bem!",
+        ja_aberto=True,
     )
     print("Video 2 terminado.")
 
     fechar_tabs_youtube()
     popup("VOLTA AO TRABALHO! MEXE ESSE CU!",                                                            "AVISO FINAL")
     popup("AVISO FINAL",                                                                                  "AVISO FINAL")
+    threading.Thread(target=abrir_video, args=(LINK_FOCO,), daemon=True).start()
     popup("Agora volta ao trabalho! Já está na altura de fazeres um caralho, pá!",                       "AVISO FINAL")
     reproduzir_video_com_vigilancia(
         LINK_FOCO,
         msg_fecho="Vá só uns 15 segundinhos! Precisas de um pouco de motivação",
         msg_fim="Okay agora a escolha é tua! Aproveita o vídeo até ao fim ou finalmente faz algo de produtivo! Um beijo e um queijo <3",
+        ja_aberto=True,
     )
     print("Video 3 terminado.")
     print("Ciclo completo.\n")
